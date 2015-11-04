@@ -48,6 +48,9 @@ abstract class MetaProvider
      */
     protected function getNumericValue($property)
     {
+        if (!isset($this->suites[0]->$property)) {
+            return 0;
+        }
         return ($property === 'time')
             ? floatval($this->suites[0]->$property)
             : intval($this->suites[0]->$property);

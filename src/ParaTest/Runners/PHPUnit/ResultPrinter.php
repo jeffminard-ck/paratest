@@ -201,16 +201,6 @@ class ResultPrinter
                 $test->getPath()
             ));
         }
-        if (!$reader->hasResults()) {
-            throw new \RuntimeException(sprintf(
-                "The process: %s\nLog file \"%s\" is empty.\n" .
-                "This means a PHPUnit process was unable to run \"%s\"\n" .
-                "Maybe there is more than one class in this file.",
-                $test->getLastCommand(),
-                $test->getTempFile(),
-                $test->getPath()
-            ));
-        }
         $this->results->addReader($reader);
         $this->processReaderFeedback($reader, $test->getTestCount());
         $this->printTestWarnings($test);
@@ -500,15 +490,20 @@ class ResultPrinter
                 $this->totalSkippedOrIncomplete
             );
         } else {
-            // phpunit 4.5 produce plural version for test(s) and assertion(s) in that case
-            // also it shows result as black text on green background
-            return $this->green(sprintf(
-                "OK (%d test%s, %d assertion%s)\n",
-                $tests,
-                ($tests == 1) ? '' : 's',
-                $asserts,
-                ($asserts == 1) ? '' : 's'
-            ));
+            if ($tests == 0) {
+                return $this->yellow('No tests executed!');
+            }
+            else {
+                // phpunit 4.5 produce plural version for test(s) and assertion(s) in that case
+                // also it shows result as black text on green background
+                return $this->green(sprintf(
+                    "OK (%d test%s, %d assertion%s)\n",
+                    $tests,
+                    ($tests == 1) ? '' : 's',
+                    $asserts,
+                    ($asserts == 1) ? '' : 's'
+                ));
+            }
         }
     }
 
@@ -516,6 +511,16 @@ class ResultPrinter
     {
         if ($this->colors) {
             return "\x1b[30;42m\x1b[2K"
+                . $text
+                . "\x1b[0m\x1b[2K";
+        }
+        return $text;
+    }
+
+    private function yellow($text)
+    {
+        if ($this->colors) {
+            return "\x1b[30;43m\x1b[2K"
                 . $text
                 . "\x1b[0m\x1b[2K";
         }
